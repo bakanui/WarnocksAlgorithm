@@ -3,8 +3,11 @@
     Dim canvas As Bitmap
     Dim vertices(7) As Vertex
     Dim edges(12) As Edge
-    Dim vpolygons() As VPolygon
-    Dim epolygons() As EPolygon
+    Dim vpolygon As List(Of Vertex)
+    Dim epolygon As List(Of Edge)
+
+
+
     Dim view(3, 3), screen(3, 3) As Single
     Dim VR(7), VS(7) As Point
     Dim deg As Single = 0
@@ -20,12 +23,6 @@
     End Structure
     Structure Mesh
         Dim e1, e2, e3, e4 As Edge
-    End Structure
-    Structure VPolygon
-        Dim p1, p2, p3 As Integer
-    End Structure
-    Structure EPolygon
-        Dim e1, e2, e3 As Integer
     End Structure
     Sub SetColMat(ByRef Matrix(,) As Single, col As Integer, a As Double, b As Double, c As Double, d As Double)
         Matrix(0, col) = a
@@ -44,14 +41,25 @@
     Function DegreeToRadian(ByRef degree As Integer)
         Return degree * Math.PI / 180
     End Function
+
+    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+
+    End Sub
+
     Sub SetEdge(ByRef edge As Edge, n1 As Integer, n2 As Integer)
         edge.point1 = n1
         edge.point2 = n2
     End Sub
     Sub SetVertex(ByRef Vertex As Vertex, x As Integer, y As Integer, z As Integer)
+        x = Integer.Parse(TextBoxX.Text)
+        y = Integer.Parse(TextBoxY.Text)
+        z = Integer.Parse(TextBoxZ.Text)
+
         Vertex.x = x
         Vertex.y = y
         Vertex.z = z
         Vertex.w = 1
     End Sub
+
+
 End Class
