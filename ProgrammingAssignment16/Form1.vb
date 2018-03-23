@@ -3,7 +3,7 @@
     Dim canvas As Bitmap
     Dim vertex1(3), vertex2(4) As Vertex
     Dim edge1(5), edge2(8) As Edge
-    Dim surface1(3), surface2(5) As Surface
+    Dim surface1(3), surface2(5) As Mesh
     Dim pr(3, 3), pr2(3, 3) As Single
     Dim vpolygon As List(Of Vertex)
     Dim epolygon As List(Of Edge)
@@ -12,6 +12,11 @@
     Dim view(3, 3), screen(3, 3) As Single
     Dim dx, dy, dz, tetax, tetay, tetaz As Single
     Dim dx2, dy2, dz2, tetax2, tetay2, tetaz2 As Single
+
+    Private Sub PictureBox1_Click(sender As Object, e As EventArgs) Handles PictureBox1.Click
+
+    End Sub
+
     Dim VR(7), VS(7) As Point
     Dim deg As Single = 0
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
@@ -35,6 +40,15 @@
 
         DrawPyramids(True, True)
     End Sub
+    Structure TVector
+        Public i, j, k As Single
+    End Structure
+
+    Sub SetVector(ByRef vector As TVector, x As Single, y As Single, z As Single)
+        vector.i = x
+        vector.j = y
+        vector.k = z
+    End Sub
     Structure Edge
         Dim point1, point2 As Integer
     End Structure
@@ -42,17 +56,14 @@
         Dim x, y, z, w As Single
     End Structure
     Structure Mesh
-        Dim e1, e2, e3, e4 As Edge
-    End Structure
-    Structure Surface
         Dim vertex1, vertex2, vertex3 As Integer
         Dim isVisible As Boolean
     End Structure
 
-    Sub SetSurface(ByRef surface As Surface, ByVal sf1 As Integer, ByVal sf2 As Integer, ByVal sf3 As Integer)
-        surface.vertex1 = sf1
-        surface.vertex2 = sf2
-        surface.vertex3 = sf3
+    Sub SetMesh(ByRef mesh As Mesh, ByVal sf1 As Integer, ByVal sf2 As Integer, ByVal sf3 As Integer)
+        mesh.vertex1 = sf1
+        mesh.vertex2 = sf2
+        mesh.vertex3 = sf3
     End Sub
     Sub SetColMat(ByRef Matrix(,) As Single, col As Integer, a As Double, b As Double, c As Double, d As Double)
         Matrix(0, col) = a
@@ -162,26 +173,88 @@
 
     Sub SetDefaultSurfaces()
         For i As Integer = 0 To 3
-            surface1(i) = New Surface
-            surface2(i) = New Surface
+            surface1(i) = New Mesh
+            surface2(i) = New Mesh
         Next
-        surface2(4) = New Surface
-        surface2(5) = New Surface
+        surface2(4) = New Mesh
+        surface2(5) = New Mesh
 
         'Base on Vertex
-        SetSurface(surface1(0), 0, 1, 2)
-        SetSurface(surface1(1), 0, 2, 3)
-        SetSurface(surface1(2), 1, 2, 3)
-        SetSurface(surface1(3), 0, 1, 3)
+        SetMesh(surface1(0), 0, 1, 2)
+        SetMesh(surface1(1), 0, 2, 3)
+        SetMesh(surface1(2), 1, 2, 3)
+        SetMesh(surface1(3), 0, 1, 3)
 
         'Base on Vertex
-        SetSurface(surface2(0), 0, 1, 4)
-        SetSurface(surface2(1), 1, 2, 4)
-        SetSurface(surface2(2), 2, 3, 4)
-        SetSurface(surface2(3), 3, 0, 4)
-        SetSurface(surface2(4), 0, 1, 2)
-        SetSurface(surface2(5), 2, 3, 0)
+        SetMesh(surface2(0), 0, 1, 4)
+        SetMesh(surface2(1), 1, 2, 4)
+        SetMesh(surface2(2), 2, 3, 4)
+        SetMesh(surface2(3), 3, 0, 4)
+        SetMesh(surface2(4), 0, 1, 2)
+        SetMesh(surface2(5), 2, 3, 0)
     End Sub
+    Function DotProductof(V1 As TVector, V2 As TVector) As Single
+        Return (V1.i * V2.i) + (V1.j * V2.j) + (V1.k * V2.k)
+    End Function
+    Sub BackFaceCulling(ByRef surface1() As Mesh, ByRef surface2() As Mesh, coor1() As Vertex, coor2() As Vertex, Upd1 As Boolean, Upd2 As Boolean)
+        Dim N, V As New TVector
+
+        SetVector(V, 0, 0, -4)
+
+        If Upd1 Then
+            For i = 0 To 3
+                N = Normalof(surface1(i), coor1)
+                If DotProductof(V, N) >= 0 Then
+                    surface1(i).isVisible = False
+                Else
+                    surface1(i).isVisible = True
+                End If
+            Next
+        End If
+
+        If Upd2 Then
+            For i = 0 To 4
+                N = Normalof(surface2(i), coor2)
+                If DotProductof(V, N) >= 0 Then
+                    surface2(i).isVisible = False
+                Else
+                    surface2(i).isVisible = True
+                End If
+            Next
+        End If
+    End Sub
+    Function Normalof(mesh As Mesh, Point() As Vertex) As TVector
+        Dim A, B As TVector
+        Dim p1, p2, p3 As Integer
+
+        p1 = mesh.vertex1
+        p2 = mesh.vertex2
+        p3 = mesh.vertex3
+
+        A = New TVector
+        B = New TVector
+
+        A.i = Point(p2).x - Point(p1).x
+        A.j = Point(p2).y - Point(p1).y
+        A.k = Point(p2).z - Point(p1).z
+        SetVector(A, A.i, A.j, A.k)
+        B.i = Point(p3).x - Point(p1).x
+        B.j = Point(p3).y - Point(p1).y
+        B.k = Point(p3).z - Point(p1).z
+        SetVector(B, B.i, B.j, B.k)
+
+        'SetVector(A, Point(p1).x - Point(p2).x, Point(p1).y - Point(p2).y, Point(p1).z - Point(p2).z)
+        'SetVector(B, Point(p3).x - Point(p2).x, Point(p3).y - Point(p2).y, Point(p3).z - Point(p2).z)
+
+        Return CrossProductof(A, B)
+    End Function
+    Function CrossProductof(V1 As TVector, V2 As TVector) As TVector
+        Dim result As New TVector
+        result.i = (V1.j * V2.k) - (V1.k * V2.j)
+        result.j = (V1.k * V2.i) - (V1.i * V2.k)
+        result.k = (V1.i * V2.j) - (V1.j * V2.i)
+        Return result
+    End Function
     Sub DrawPyramids(Update1 As Boolean, Update2 As Boolean)
         Dim VR1(3), VS1(3), VR2(4), VS2(4) As Vertex
         Dim a, b, c, d, e, f, g, h, j, k, l, m As Integer
@@ -292,6 +365,7 @@
             Next
         End If
 
+        BackFaceCulling(surface1, surface2, VS1, VS2, Update1, Update2)
         'graph.Clear(Canvas.BackColor)
         PictureBox1.Refresh()
     End Sub
