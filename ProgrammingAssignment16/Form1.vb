@@ -11,10 +11,6 @@
     Dim dx, dy, dz, tetax, tetay, tetaz As Single
     Dim dx2, dy2, dz2, tetax2, tetay2, tetaz2 As Single
 
-    Private Sub PictureBox1_Click(sender As Object, e As EventArgs) Handles PictureBox1.Click
-
-    End Sub
-
     Dim VR(7), VS(7) As Point
     Dim deg As Single = 0
 
@@ -35,7 +31,7 @@
 
         SetDefaultPoints()
         SetDefaultEdges()
-        SetDefaultSurfaces()
+        SetDefaultMeshes()
 
         SetColMat(view, 0, 1, 0, 0, 0)
         SetColMat(view, 1, 0, 1, 0, 0)
@@ -49,15 +45,11 @@
 
         DrawPyramids(True, True)
     End Sub
-    Structure TVector
+    Structure Vector
         Public i, j, k As Single
     End Structure
 
-    Private Sub TextBoxZ_TextChanged(sender As Object, e As EventArgs)
-
-    End Sub
-
-    Sub SetVector(ByRef vector As TVector, x As Single, y As Single, z As Single)
+    Sub SetVector(ByRef vector As Vector, x As Single, y As Single, z As Single)
         vector.i = x
         vector.j = y
         vector.k = z
@@ -106,7 +98,6 @@
         result.z = (point.x * M(0, 2) + point.y * M(1, 2) + point.z * M(2, 2) + point.w * M(3, 2))
         result.w = (point.x * M(0, 3) + point.y * M(1, 3) + point.z * M(2, 3) + point.w * M(3, 3))
 
-
         result.x = result.x / result.w
         result.y = result.y / result.w
         result.z = result.z / result.w
@@ -129,10 +120,6 @@
     Function DegreeToRadian(ByRef degree As Integer)
         Return degree * Math.PI / 180
     End Function
-
-    Private Sub Button1_Click(sender As Object, e As EventArgs)
-
-    End Sub
 
     Sub SetEdge(ByRef edge As Edge, n1 As Integer, n2 As Integer)
         edge.point1 = n1
@@ -198,7 +185,7 @@
         SetEdge(edge2(8), 0, 2)
     End Sub
 
-    Sub SetDefaultSurfaces()
+    Sub SetDefaultMeshes()
         For i As Integer = 0 To 3
             mesh1(i) = New Mesh
             mesh2(i) = New Mesh
@@ -220,11 +207,11 @@
         SetMesh(mesh2(4), 0, 1, 2)
         SetMesh(mesh2(5), 2, 3, 0)
     End Sub
-    Function DotProductof(V1 As TVector, V2 As TVector) As Single
+    Function DotProductof(V1 As Vector, V2 As Vector) As Single
         Return (V1.i * V2.i) + (V1.j * V2.j) + (V1.k * V2.k)
     End Function
     Sub BackFaceCulling(ByRef surface1() As Mesh, ByRef surface2() As Mesh, coor1() As Vertex, coor2() As Vertex, Upd1 As Boolean, Upd2 As Boolean)
-        Dim N, V As New TVector
+        Dim N, V As New Vector
 
         SetVector(V, 0, 0, -4)
 
@@ -250,16 +237,16 @@
             Next
         End If
     End Sub
-    Function Normalof(mesh As Mesh, Point() As Vertex) As TVector
-        Dim A, B As TVector
+    Function Normalof(mesh As Mesh, Point() As Vertex) As Vector
+        Dim A, B As Vector
         Dim p1, p2, p3 As Integer
 
         p1 = mesh.vertex1
         p2 = mesh.vertex2
         p3 = mesh.vertex3
 
-        A = New TVector
-        B = New TVector
+        A = New Vector
+        B = New Vector
 
         A.i = Point(p2).x - Point(p1).x
         A.j = Point(p2).y - Point(p1).y
@@ -272,8 +259,8 @@
 
         Return CrossProductof(A, B)
     End Function
-    Function CrossProductof(V1 As TVector, V2 As TVector) As TVector
-        Dim result As New TVector
+    Function CrossProductof(V1 As Vector, V2 As Vector) As Vector
+        Dim result As New Vector
         result.i = (V1.j * V2.k) - (V1.k * V2.j)
         result.j = (V1.k * V2.i) - (V1.i * V2.k)
         result.k = (V1.i * V2.j) - (V1.j * V2.i)
@@ -415,6 +402,22 @@
                                         MessageBoxIcon.Exclamation,
                                         MessageBoxDefaultButton.Button1)
                     End If
+                ElseIf RotateRadio.Checked Then
+                    If Pyramid1Radio.Checked Then
+                        tetax = tetax + 1
+                        SetColMat(Rotatex, 1, 0, cos(tetax), -sin(tetax), 0)
+                        SetColMat(Rotatex, 2, 0, sin(tetax), cos(tetax), 0)
+                    ElseIf Pyramid2Radio.Checked Then
+                        tetax2 = tetax2 + 1
+                        SetColMat(Rotatex2, 1, 0, cos(tetax2), -sin(tetax2), 0)
+                        SetColMat(Rotatex2, 2, 0, sin(tetax2), cos(tetax2), 0)
+                    Else
+                        MessageBox.Show("No pyramid is selected.",
+                                        "Warning",
+                                        MessageBoxButtons.OK,
+                                        MessageBoxIcon.Exclamation,
+                                        MessageBoxDefaultButton.Button1)
+                    End If
                 Else
                     MessageBox.Show("No command is selected.",
                                     "Warning",
@@ -427,11 +430,27 @@
             Case Keys.A
                 If MoveRadio.Checked Then
                     If Pyramid1Radio.Checked Then
-                        dx = dx - 0.1
+                        dx = dx - 1
                         SetColMat(Translate, 0, 1, 0, 0, dx)
                     ElseIf Pyramid2Radio.Checked Then
-                        dx2 = dx2 - 0.1
+                        dx2 = dx2 - 1
                         SetColMat(Translate, 0, 1, 0, 0, dx2)
+                    Else
+                        MessageBox.Show("No pyramid is selected.",
+                                        "Warning",
+                                        MessageBoxButtons.OK,
+                                        MessageBoxIcon.Exclamation,
+                                        MessageBoxDefaultButton.Button1)
+                    End If
+                ElseIf RotateRadio.Checked Then
+                    If Pyramid1Radio.Checked Then
+                        tetax = tetax - 1
+                        SetColMat(Rotatex, 1, 0, cos(tetax), -sin(tetax), 0)
+                        SetColMat(Rotatex, 2, 0, sin(tetax), cos(tetax), 0)
+                    ElseIf Pyramid2Radio.Checked Then
+                        tetax2 = tetax2 - 1
+                        SetColMat(Rotatex2, 1, 0, cos(tetax2), -sin(tetax2), 0)
+                        SetColMat(Rotatex2, 2, 0, sin(tetax2), cos(tetax2), 0)
                     Else
                         MessageBox.Show("No pyramid is selected.",
                                         "Warning",
@@ -463,6 +482,22 @@
                                         MessageBoxIcon.Exclamation,
                                         MessageBoxDefaultButton.Button1)
                     End If
+                ElseIf RotateRadio.Checked Then
+                    If Pyramid1Radio.Checked Then
+                        tetay = tetay + 1
+                        SetColMat(Rotatey, 0, cos(tetay), 0, sin(tetay), 0)
+                        SetColMat(Rotatey, 2, -sin(tetay), 0, cos(tetay), 0)
+                    ElseIf Pyramid2Radio.Checked Then
+                        tetay2 = tetay2 + 1
+                        SetColMat(Rotatey2, 0, cos(tetay2), 0, sin(tetay2), 0)
+                        SetColMat(Rotatey2, 2, -sin(tetay2), 0, cos(tetay2), 0)
+                    Else
+                        MessageBox.Show("No pyramid is selected.",
+                                        "Warning",
+                                        MessageBoxButtons.OK,
+                                        MessageBoxIcon.Exclamation,
+                                        MessageBoxDefaultButton.Button1)
+                    End If
                 Else
                     MessageBox.Show("No command is selected.",
                                     "Warning",
@@ -487,6 +522,22 @@
                                         MessageBoxIcon.Exclamation,
                                         MessageBoxDefaultButton.Button1)
                     End If
+                ElseIf RotateRadio.Checked Then
+                    If Pyramid1Radio.Checked Then
+                        tetay = tetay - 1
+                        SetColMat(Rotatey, 0, cos(tetay), 0, sin(tetay), 0)
+                        SetColMat(Rotatey, 2, -sin(tetay), 0, cos(tetay), 0)
+                    ElseIf Pyramid2Radio.Checked Then
+                        tetay2 = tetay2 - 1
+                        SetColMat(Rotatey2, 0, cos(tetay2), 0, sin(tetay2), 0)
+                        SetColMat(Rotatey2, 2, -sin(tetay2), 0, cos(tetay2), 0)
+                    Else
+                        MessageBox.Show("No pyramid is selected.",
+                                        "Warning",
+                                        MessageBoxButtons.OK,
+                                        MessageBoxIcon.Exclamation,
+                                        MessageBoxDefaultButton.Button1)
+                    End If
                 Else
                     MessageBox.Show("No command is selected.",
                                     "Warning",
@@ -499,15 +550,27 @@
             Case Keys.E
                 If MoveRadio.Checked Then
                     If Pyramid1Radio.Checked Then
-                        If dz - 0.25 > -6.5 Then
-                            dz = dz - 0.125
-                            SetColMat(Translate, 2, 0, 0, 1, dz)
-                        End If
+                        dz = dz - 0.125
+                        SetColMat(Translate, 2, 0, 0, 1, dz)
                     ElseIf Pyramid2Radio.Checked Then
-                        If dz2 - 0.25 > -6.5 Then
-                            dz2 = dz2 - 0.125
-                            SetColMat(Translate2, 2, 0, 0, 1, dz2)
-                        End If
+                        dz2 = dz2 - 0.125
+                        SetColMat(Translate2, 2, 0, 0, 1, dz2)
+                    Else
+                        MessageBox.Show("No pyramid is selected.",
+                                        "Warning",
+                                        MessageBoxButtons.OK,
+                                        MessageBoxIcon.Exclamation,
+                                        MessageBoxDefaultButton.Button1)
+                    End If
+                ElseIf RotateRadio.Checked Then
+                    If Pyramid1Radio.Checked Then
+                        tetax = tetax - 1
+                        SetColMat(Rotatez, 0, cos(tetaz), -sin(tetaz), 0, 0)
+                        SetColMat(Rotatez, 1, sin(tetaz), cos(tetaz), 0, 0)
+                    ElseIf Pyramid2Radio.Checked Then
+                        tetax2 = tetax2 - 1
+                        SetColMat(Rotatez, 0, cos(tetaz), -sin(tetaz), 0, 0)
+                        SetColMat(Rotatez, 1, sin(tetaz), cos(tetaz), 0, 0)
                     Else
                         MessageBox.Show("No pyramid is selected.",
                                         "Warning",
@@ -527,15 +590,27 @@
             Case Keys.Z
                 If MoveRadio.Checked Then
                     If Pyramid1Radio.Checked Then
-                        If dz + 0.25 < 2 Then
-                            dz = dz + 0.125
-                            SetColMat(Translate, 2, 0, 0, 1, dz)
-                        End If
+                        dz = dz + 0.125
+                        SetColMat(Translate, 2, 0, 0, 1, dz)
                     ElseIf Pyramid2Radio.Checked Then
-                        If dz2 + 0.25 < 2 Then
-                            dz2 = dz2 + 0.125
-                            SetColMat(Translate2, 2, 0, 0, 1, dz2)
-                        End If
+                        dz2 = dz2 + 0.125
+                        SetColMat(Translate2, 2, 0, 0, 1, dz2)
+                    Else
+                        MessageBox.Show("No pyramid is selected.",
+                                        "Warning",
+                                        MessageBoxButtons.OK,
+                                        MessageBoxIcon.Exclamation,
+                                        MessageBoxDefaultButton.Button1)
+                    End If
+                ElseIf RotateRadio.Checked Then
+                    If Pyramid1Radio.Checked Then
+                        tetaz = tetaz + 1
+                        SetColMat(Rotatez, 0, cos(tetaz), -sin(tetaz), 0, 0)
+                        SetColMat(Rotatez, 1, sin(tetaz), cos(tetaz), 0, 0)
+                    ElseIf Pyramid2Radio.Checked Then
+                        tetaz2 = tetaz2 + 1
+                        SetColMat(Rotatez, 0, cos(tetaz), -sin(tetaz), 0, 0)
+                        SetColMat(Rotatez, 1, sin(tetaz), cos(tetaz), 0, 0)
                     Else
                         MessageBox.Show("No pyramid is selected.",
                                         "Warning",

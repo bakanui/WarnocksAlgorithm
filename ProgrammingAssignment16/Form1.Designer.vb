@@ -28,21 +28,21 @@ Partial Class Form1
         Me.Button2 = New System.Windows.Forms.Button()
         Me.MoveRadio = New System.Windows.Forms.RadioButton()
         Me.GroupBox3 = New System.Windows.Forms.GroupBox()
-        Me.BackgroundWorker1 = New System.ComponentModel.BackgroundWorker()
-        Me.RadioButton1 = New System.Windows.Forms.RadioButton()
-        Me.GroupBox1 = New System.Windows.Forms.GroupBox()
-        Me.GroupBox2 = New System.Windows.Forms.GroupBox()
-        Me.Label1 = New System.Windows.Forms.Label()
-        Me.Label2 = New System.Windows.Forms.Label()
-        Me.Label3 = New System.Windows.Forms.Label()
-        Me.Label4 = New System.Windows.Forms.Label()
-        Me.Label5 = New System.Windows.Forms.Label()
-        Me.Label6 = New System.Windows.Forms.Label()
         Me.Label7 = New System.Windows.Forms.Label()
+        Me.GroupBox2 = New System.Windows.Forms.GroupBox()
+        Me.Label6 = New System.Windows.Forms.Label()
+        Me.Label5 = New System.Windows.Forms.Label()
+        Me.Label4 = New System.Windows.Forms.Label()
+        Me.Label3 = New System.Windows.Forms.Label()
+        Me.Label2 = New System.Windows.Forms.Label()
+        Me.Label1 = New System.Windows.Forms.Label()
+        Me.RotateRadio = New System.Windows.Forms.RadioButton()
+        Me.BackgroundWorker1 = New System.ComponentModel.BackgroundWorker()
+        Me.GroupBox1 = New System.Windows.Forms.GroupBox()
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.GroupBox3.SuspendLayout()
-        Me.GroupBox1.SuspendLayout()
         Me.GroupBox2.SuspendLayout()
+        Me.GroupBox1.SuspendLayout()
         Me.SuspendLayout()
         '
         'PictureBox1
@@ -100,7 +100,7 @@ Partial Class Form1
         '
         Me.GroupBox3.Controls.Add(Me.Label7)
         Me.GroupBox3.Controls.Add(Me.GroupBox2)
-        Me.GroupBox3.Controls.Add(Me.RadioButton1)
+        Me.GroupBox3.Controls.Add(Me.RotateRadio)
         Me.GroupBox3.Controls.Add(Me.MoveRadio)
         Me.GroupBox3.Location = New System.Drawing.Point(556, 86)
         Me.GroupBox3.Name = "GroupBox3"
@@ -109,27 +109,14 @@ Partial Class Form1
         Me.GroupBox3.TabStop = False
         Me.GroupBox3.Text = "Command"
         '
-        'RadioButton1
+        'Label7
         '
-        Me.RadioButton1.AutoSize = True
-        Me.RadioButton1.Location = New System.Drawing.Point(137, 19)
-        Me.RadioButton1.Name = "RadioButton1"
-        Me.RadioButton1.Size = New System.Drawing.Size(57, 17)
-        Me.RadioButton1.TabIndex = 21
-        Me.RadioButton1.TabStop = True
-        Me.RadioButton1.Text = "Rotate"
-        Me.RadioButton1.UseVisualStyleBackColor = True
-        '
-        'GroupBox1
-        '
-        Me.GroupBox1.Controls.Add(Me.Pyramid2Radio)
-        Me.GroupBox1.Controls.Add(Me.Pyramid1Radio)
-        Me.GroupBox1.Location = New System.Drawing.Point(556, 30)
-        Me.GroupBox1.Name = "GroupBox1"
-        Me.GroupBox1.Size = New System.Drawing.Size(200, 40)
-        Me.GroupBox1.TabIndex = 22
-        Me.GroupBox1.TabStop = False
-        Me.GroupBox1.Text = "Select a Pyramid"
+        Me.Label7.AutoSize = True
+        Me.Label7.Location = New System.Drawing.Point(13, 53)
+        Me.Label7.Name = "Label7"
+        Me.Label7.Size = New System.Drawing.Size(173, 26)
+        Me.Label7.TabIndex = 23
+        Me.Label7.Text = "Use the W, A, S, D, E, and Z keys " & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "to rotate or move the pyramid!"
         '
         'GroupBox2
         '
@@ -146,41 +133,14 @@ Partial Class Form1
         Me.GroupBox2.TabStop = False
         Me.GroupBox2.Text = "Controls"
         '
-        'Label1
+        'Label6
         '
-        Me.Label1.AutoSize = True
-        Me.Label1.Location = New System.Drawing.Point(7, 20)
-        Me.Label1.Name = "Label1"
-        Me.Label1.Size = New System.Drawing.Size(65, 13)
-        Me.Label1.TabIndex = 0
-        Me.Label1.Text = "W = Y+ Axis"
-        '
-        'Label2
-        '
-        Me.Label2.AutoSize = True
-        Me.Label2.Location = New System.Drawing.Point(7, 43)
-        Me.Label2.Name = "Label2"
-        Me.Label2.Size = New System.Drawing.Size(58, 13)
-        Me.Label2.TabIndex = 1
-        Me.Label2.Text = "S = Y- Axis"
-        '
-        'Label3
-        '
-        Me.Label3.AutoSize = True
-        Me.Label3.Location = New System.Drawing.Point(7, 69)
-        Me.Label3.Name = "Label3"
-        Me.Label3.Size = New System.Drawing.Size(58, 13)
-        Me.Label3.TabIndex = 2
-        Me.Label3.Text = "A = X- Axis"
-        '
-        'Label4
-        '
-        Me.Label4.AutoSize = True
-        Me.Label4.Location = New System.Drawing.Point(7, 95)
-        Me.Label4.Name = "Label4"
-        Me.Label4.Size = New System.Drawing.Size(62, 13)
-        Me.Label4.TabIndex = 3
-        Me.Label4.Text = "D = X+ Axis"
+        Me.Label6.AutoSize = True
+        Me.Label6.Location = New System.Drawing.Point(120, 43)
+        Me.Label6.Name = "Label6"
+        Me.Label6.Size = New System.Drawing.Size(61, 13)
+        Me.Label6.TabIndex = 5
+        Me.Label6.Text = "Z = Z+ Axis"
         '
         'Label5
         '
@@ -191,23 +151,63 @@ Partial Class Form1
         Me.Label5.TabIndex = 4
         Me.Label5.Text = "E = Z- Axis"
         '
-        'Label6
+        'Label4
         '
-        Me.Label6.AutoSize = True
-        Me.Label6.Location = New System.Drawing.Point(120, 43)
-        Me.Label6.Name = "Label6"
-        Me.Label6.Size = New System.Drawing.Size(61, 13)
-        Me.Label6.TabIndex = 5
-        Me.Label6.Text = "Z = Z+ Axis"
+        Me.Label4.AutoSize = True
+        Me.Label4.Location = New System.Drawing.Point(7, 95)
+        Me.Label4.Name = "Label4"
+        Me.Label4.Size = New System.Drawing.Size(62, 13)
+        Me.Label4.TabIndex = 3
+        Me.Label4.Text = "D = X+ Axis"
         '
-        'Label7
+        'Label3
         '
-        Me.Label7.AutoSize = True
-        Me.Label7.Location = New System.Drawing.Point(13, 53)
-        Me.Label7.Name = "Label7"
-        Me.Label7.Size = New System.Drawing.Size(173, 26)
-        Me.Label7.TabIndex = 23
-        Me.Label7.Text = "Use the W, A, S, D, E, and Z keys " & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "to rotate or move the pyramid!"
+        Me.Label3.AutoSize = True
+        Me.Label3.Location = New System.Drawing.Point(7, 69)
+        Me.Label3.Name = "Label3"
+        Me.Label3.Size = New System.Drawing.Size(58, 13)
+        Me.Label3.TabIndex = 2
+        Me.Label3.Text = "A = X- Axis"
+        '
+        'Label2
+        '
+        Me.Label2.AutoSize = True
+        Me.Label2.Location = New System.Drawing.Point(7, 43)
+        Me.Label2.Name = "Label2"
+        Me.Label2.Size = New System.Drawing.Size(58, 13)
+        Me.Label2.TabIndex = 1
+        Me.Label2.Text = "S = Y- Axis"
+        '
+        'Label1
+        '
+        Me.Label1.AutoSize = True
+        Me.Label1.Location = New System.Drawing.Point(7, 20)
+        Me.Label1.Name = "Label1"
+        Me.Label1.Size = New System.Drawing.Size(65, 13)
+        Me.Label1.TabIndex = 0
+        Me.Label1.Text = "W = Y+ Axis"
+        '
+        'RotateRadio
+        '
+        Me.RotateRadio.AutoSize = True
+        Me.RotateRadio.Location = New System.Drawing.Point(137, 19)
+        Me.RotateRadio.Name = "RotateRadio"
+        Me.RotateRadio.Size = New System.Drawing.Size(57, 17)
+        Me.RotateRadio.TabIndex = 21
+        Me.RotateRadio.TabStop = True
+        Me.RotateRadio.Text = "Rotate"
+        Me.RotateRadio.UseVisualStyleBackColor = True
+        '
+        'GroupBox1
+        '
+        Me.GroupBox1.Controls.Add(Me.Pyramid2Radio)
+        Me.GroupBox1.Controls.Add(Me.Pyramid1Radio)
+        Me.GroupBox1.Location = New System.Drawing.Point(556, 30)
+        Me.GroupBox1.Name = "GroupBox1"
+        Me.GroupBox1.Size = New System.Drawing.Size(200, 40)
+        Me.GroupBox1.TabIndex = 22
+        Me.GroupBox1.TabStop = False
+        Me.GroupBox1.Text = "Select a Pyramid"
         '
         'Form1
         '
@@ -223,10 +223,10 @@ Partial Class Form1
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).EndInit()
         Me.GroupBox3.ResumeLayout(False)
         Me.GroupBox3.PerformLayout()
-        Me.GroupBox1.ResumeLayout(False)
-        Me.GroupBox1.PerformLayout()
         Me.GroupBox2.ResumeLayout(False)
         Me.GroupBox2.PerformLayout()
+        Me.GroupBox1.ResumeLayout(False)
+        Me.GroupBox1.PerformLayout()
         Me.ResumeLayout(False)
 
     End Sub
@@ -245,7 +245,7 @@ Partial Class Form1
     Friend WithEvents Label3 As Label
     Friend WithEvents Label2 As Label
     Friend WithEvents Label1 As Label
-    Friend WithEvents RadioButton1 As RadioButton
+    Friend WithEvents RotateRadio As RadioButton
     Friend WithEvents GroupBox1 As GroupBox
     Friend WithEvents Label7 As Label
 End Class
