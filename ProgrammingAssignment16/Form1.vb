@@ -3,10 +3,8 @@
     Dim canvas As Bitmap
     Dim vertex1(3), vertex2(4) As Vertex
     Dim edge1(5), edge2(8) As Edge
-    Dim surface1(3), surface2(5) As Mesh
+    Dim mesh1(3), mesh2(5) As Mesh
     Dim pr(3, 3), pr2(3, 3) As Single
-    Dim vpolygon As List(Of Vertex)
-    Dim epolygon As List(Of Edge)
     Dim Translate(3, 3), Rotatex(3, 3), Rotatey(3, 3), Rotatez(3, 3) As Single
     Dim Translate2(3, 3), Rotatex2(3, 3), Rotatey2(3, 3), Rotatez2(3, 3) As Single
     Dim view(3, 3), screen(3, 3) As Single
@@ -19,7 +17,18 @@
 
     Dim VR(7), VS(7) As Point
     Dim deg As Single = 0
+
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        Me.KeyPreview = True
+        tetaz = 0
+        tetay = 0
+        tetax = 0
+        dx = -2.5
+        dy = 0
+        dz = 0
+        dx2 = 2
+        dy2 = 0
+        dz2 = 0
         canvas = New Bitmap(PictureBox1.Width, PictureBox1.Height)
         graphics = Graphics.FromImage(canvas)
         PictureBox1.Image = canvas
@@ -44,11 +53,29 @@
         Public i, j, k As Single
     End Structure
 
+    Private Sub TextBoxZ_TextChanged(sender As Object, e As EventArgs)
+
+    End Sub
+
     Sub SetVector(ByRef vector As TVector, x As Single, y As Single, z As Single)
         vector.i = x
         vector.j = y
         vector.k = z
     End Sub
+
+    Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
+        tetaz = 0
+        tetay = 0
+        tetax = 0
+        dx = -2.5
+        dy = 0
+        dz = 0
+        dx2 = 2
+        dy2 = 0
+        dz2 = 0
+        DrawPyramids(True, True)
+    End Sub
+
     Structure Edge
         Dim point1, point2 As Integer
     End Structure
@@ -103,7 +130,7 @@
         Return degree * Math.PI / 180
     End Function
 
-    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+    Private Sub Button1_Click(sender As Object, e As EventArgs)
 
     End Sub
 
@@ -173,25 +200,25 @@
 
     Sub SetDefaultSurfaces()
         For i As Integer = 0 To 3
-            surface1(i) = New Mesh
-            surface2(i) = New Mesh
+            mesh1(i) = New Mesh
+            mesh2(i) = New Mesh
         Next
-        surface2(4) = New Mesh
-        surface2(5) = New Mesh
+        mesh2(4) = New Mesh
+        mesh2(5) = New Mesh
 
         'Base on Vertex
-        SetMesh(surface1(0), 0, 1, 2)
-        SetMesh(surface1(1), 0, 2, 3)
-        SetMesh(surface1(2), 1, 2, 3)
-        SetMesh(surface1(3), 0, 1, 3)
+        SetMesh(mesh1(0), 0, 1, 2)
+        SetMesh(mesh1(1), 0, 2, 3)
+        SetMesh(mesh1(2), 1, 2, 3)
+        SetMesh(mesh1(3), 0, 1, 3)
 
         'Base on Vertex
-        SetMesh(surface2(0), 0, 1, 4)
-        SetMesh(surface2(1), 1, 2, 4)
-        SetMesh(surface2(2), 2, 3, 4)
-        SetMesh(surface2(3), 3, 0, 4)
-        SetMesh(surface2(4), 0, 1, 2)
-        SetMesh(surface2(5), 2, 3, 0)
+        SetMesh(mesh2(0), 0, 1, 4)
+        SetMesh(mesh2(1), 1, 2, 4)
+        SetMesh(mesh2(2), 2, 3, 4)
+        SetMesh(mesh2(3), 3, 0, 4)
+        SetMesh(mesh2(4), 0, 1, 2)
+        SetMesh(mesh2(5), 2, 3, 0)
     End Sub
     Function DotProductof(V1 As TVector, V2 As TVector) As Single
         Return (V1.i * V2.i) + (V1.j * V2.j) + (V1.k * V2.k)
@@ -243,9 +270,6 @@
         B.k = Point(p3).z - Point(p1).z
         SetVector(B, B.i, B.j, B.k)
 
-        'SetVector(A, Point(p1).x - Point(p2).x, Point(p1).y - Point(p2).y, Point(p1).z - Point(p2).z)
-        'SetVector(B, Point(p3).x - Point(p2).x, Point(p3).y - Point(p2).y, Point(p3).z - Point(p2).z)
-
         Return CrossProductof(A, B)
     End Function
     Function CrossProductof(V1 As TVector, V2 As TVector) As TVector
@@ -261,24 +285,24 @@
         graphics.Clear(PictureBox1.BackColor)
 
         If Update1 Then
-            SetColMat(Translate, 0, 1, 0, 0, -2.5)
-            SetColMat(Translate, 1, 0, 1, 0, 0)
-            SetColMat(Translate, 2, 0, 0, 1, 0)
+            SetColMat(Translate, 0, 1, 0, 0, dx)
+            SetColMat(Translate, 1, 0, 1, 0, dy)
+            SetColMat(Translate, 2, 0, 0, 1, dz)
             SetColMat(Translate, 3, 0, 0, 0, 1)
             'rotate
-            tetaz = 0
+
             SetColMat(Rotatez, 0, cos(tetaz), -sin(tetaz), 0, 0)
             SetColMat(Rotatez, 1, sin(tetaz), cos(tetaz), 0, 0)
             SetColMat(Rotatez, 2, 0, 0, 1, 0)
             SetColMat(Rotatez, 3, 0, 0, 0, 1)
 
-            tetay = 0
+
             SetColMat(Rotatey, 0, cos(tetay), 0, sin(tetay), 0)
             SetColMat(Rotatey, 1, 0, 1, 0, 0)
             SetColMat(Rotatey, 2, -sin(tetay), 0, cos(tetay), 0)
             SetColMat(Rotatey, 3, 0, 0, 0, 1)
 
-            tetax = 0
+
             SetColMat(Rotatex, 0, 1, 0, 0, 0)
             SetColMat(Rotatex, 1, 0, cos(tetax), -sin(tetax), 0)
             SetColMat(Rotatex, 2, 0, sin(tetax), cos(tetax), 0)
@@ -294,47 +318,47 @@
             Next
 
             For i = 0 To 3
-                a = VS1(surface1(i).vertex1).x
-                b = VS1(surface1(i).vertex1).y
-                c = VS1(surface1(i).vertex2).x
-                d = VS1(surface1(i).vertex2).y
+                a = VS1(mesh1(i).vertex1).x
+                b = VS1(mesh1(i).vertex1).y
+                c = VS1(mesh1(i).vertex2).x
+                d = VS1(mesh1(i).vertex2).y
                 graphics.DrawLine(Pens.Black, a, b, c, d)
-                e = VS1(surface1(i).vertex2).x
-                f = VS1(surface1(i).vertex2).y
-                g = VS1(surface1(i).vertex3).x
-                h = VS1(surface1(i).vertex3).y
+                e = VS1(mesh1(i).vertex2).x
+                f = VS1(mesh1(i).vertex2).y
+                g = VS1(mesh1(i).vertex3).x
+                h = VS1(mesh1(i).vertex3).y
                 graphics.DrawLine(Pens.Black, e, f, g, h)
-                j = VS1(surface1(i).vertex3).x
-                k = VS1(surface1(i).vertex3).y
-                l = VS1(surface1(i).vertex1).x
-                m = VS1(surface1(i).vertex1).y
+                j = VS1(mesh1(i).vertex3).x
+                k = VS1(mesh1(i).vertex3).y
+                l = VS1(mesh1(i).vertex1).x
+                m = VS1(mesh1(i).vertex1).y
                 graphics.DrawLine(Pens.Black, j, k, l, m)
             Next
         End If
 
         If Update2 Then
             'rotation matrix for pyramid 1
-            tetaz2 = 0
+
             SetColMat(Rotatez2, 0, cos(tetaz2), -sin(tetaz2), 0, 0)
             SetColMat(Rotatez2, 1, sin(tetaz2), cos(tetaz2), 0, 0)
             SetColMat(Rotatez2, 2, 0, 0, 1, 0)
             SetColMat(Rotatez2, 3, 0, 0, 0, 1)
 
-            tetay2 = 0
+
             SetColMat(Rotatey2, 0, cos(tetay2), 0, sin(tetay2), 0)
             SetColMat(Rotatey2, 1, 0, 1, 0, 0)
             SetColMat(Rotatey2, 2, -sin(tetay2), 0, cos(tetay2), 0)
             SetColMat(Rotatey2, 3, 0, 0, 0, 1)
 
-            tetax2 = 0
+
             SetColMat(Rotatex2, 0, 1, 0, 0, 0)
             SetColMat(Rotatex2, 1, 0, cos(tetax2), -sin(tetax2), 0)
             SetColMat(Rotatex2, 2, 0, sin(tetax2), cos(tetax2), 0)
             SetColMat(Rotatex2, 3, 0, 0, 0, 1)
 
-            SetColMat(Translate2, 0, 1, 0, 0, 2)
-            SetColMat(Translate2, 1, 0, 1, 0, 0)
-            SetColMat(Translate2, 2, 0, 0, 1, 0)
+            SetColMat(Translate2, 0, 1, 0, 0, dx2)
+            SetColMat(Translate2, 1, 0, 1, 0, dy2)
+            SetColMat(Translate2, 2, 0, 0, 1, dz2)
             SetColMat(Translate2, 3, 0, 0, 0, 1)
             For i = 0 To 4
                 pr2 = MultiplyMat2(Rotatez2, Rotatey2)
@@ -347,26 +371,187 @@
             Next
 
             For i = 0 To 4
-                a = VS2(surface2(i).vertex1).x
-                b = VS2(surface2(i).vertex1).y
-                c = VS2(surface2(i).vertex2).x
-                d = VS2(surface2(i).vertex2).y
+                a = VS2(mesh2(i).vertex1).x
+                b = VS2(mesh2(i).vertex1).y
+                c = VS2(mesh2(i).vertex2).x
+                d = VS2(mesh2(i).vertex2).y
                 graphics.DrawLine(Pens.Blue, a, b, c, d)
-                e = VS2(surface2(i).vertex2).x
-                f = VS2(surface2(i).vertex2).y
-                g = VS2(surface2(i).vertex3).x
-                h = VS2(surface2(i).vertex3).y
+                e = VS2(mesh2(i).vertex2).x
+                f = VS2(mesh2(i).vertex2).y
+                g = VS2(mesh2(i).vertex3).x
+                h = VS2(mesh2(i).vertex3).y
                 graphics.DrawLine(Pens.Blue, e, f, g, h)
-                j = VS2(surface2(i).vertex3).x
-                k = VS2(surface2(i).vertex3).y
-                l = VS2(surface2(i).vertex1).x
-                m = VS2(surface2(i).vertex1).y
+                j = VS2(mesh2(i).vertex3).x
+                k = VS2(mesh2(i).vertex3).y
+                l = VS2(mesh2(i).vertex1).x
+                m = VS2(mesh2(i).vertex1).y
                 graphics.DrawLine(Pens.Blue, j, k, l, m)
             Next
         End If
 
-        BackFaceCulling(surface1, surface2, VS1, VS2, Update1, Update2)
+        BackFaceCulling(mesh1, mesh2, VS1, VS2, Update1, Update2)
         'graph.Clear(Canvas.BackColor)
         PictureBox1.Refresh()
+    End Sub
+
+    Private Sub Form1_KeyDown(ByVal sender As System.Object, ByVal e As System.Windows.Forms.KeyEventArgs) Handles MyBase.KeyDown
+        ' Sets Handled to true to prevent other controls from 
+        ' receiving the key if an arrow key was pressed
+        Dim bHandled As Boolean = False
+
+        Select Case e.KeyCode
+            Case Keys.D
+                If MoveRadio.Checked Then
+                    If Pyramid1Radio.Checked Then
+                        dx = dx + 0.1
+                        SetColMat(Translate, 0, 1, 0, 0, dx)
+                    ElseIf Pyramid2Radio.Checked Then
+                        dx2 = dx2 + 0.1
+                        SetColMat(Translate2, 0, 1, 0, 0, dx2)
+                    Else
+                        MessageBox.Show("No pyramid is selected.",
+                                        "Warning",
+                                        MessageBoxButtons.OK,
+                                        MessageBoxIcon.Exclamation,
+                                        MessageBoxDefaultButton.Button1)
+                    End If
+                Else
+                    MessageBox.Show("No command is selected.",
+                                    "Warning",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Exclamation,
+                                    MessageBoxDefaultButton.Button1)
+                End If
+                DrawPyramids(True, True)
+                e.Handled = True
+            Case Keys.A
+                If MoveRadio.Checked Then
+                    If Pyramid1Radio.Checked Then
+                        dx = dx - 0.1
+                        SetColMat(Translate, 0, 1, 0, 0, dx)
+                    ElseIf Pyramid2Radio.Checked Then
+                        dx2 = dx2 - 0.1
+                        SetColMat(Translate, 0, 1, 0, 0, dx2)
+                    Else
+                        MessageBox.Show("No pyramid is selected.",
+                                        "Warning",
+                                        MessageBoxButtons.OK,
+                                        MessageBoxIcon.Exclamation,
+                                        MessageBoxDefaultButton.Button1)
+                    End If
+                Else
+                    MessageBox.Show("No command is selected.",
+                                    "Warning",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Exclamation,
+                                    MessageBoxDefaultButton.Button1)
+                End If
+                DrawPyramids(True, True)
+                e.Handled = True
+            Case Keys.W
+                If MoveRadio.Checked Then
+                    If Pyramid1Radio.Checked Then
+                        dy = dy + 0.1
+                        SetColMat(Translate, 1, 0, 1, 0, dy)
+                    ElseIf Pyramid2Radio.Checked Then
+                        dy2 = dy2 + 0.1
+                        SetColMat(Translate2, 1, 0, 1, 0, dy2)
+                    Else
+                        MessageBox.Show("No pyramid is selected.",
+                                        "Warning",
+                                        MessageBoxButtons.OK,
+                                        MessageBoxIcon.Exclamation,
+                                        MessageBoxDefaultButton.Button1)
+                    End If
+                Else
+                    MessageBox.Show("No command is selected.",
+                                    "Warning",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Exclamation,
+                                    MessageBoxDefaultButton.Button1)
+                End If
+                DrawPyramids(True, True)
+                e.Handled = True
+            Case Keys.S
+                If MoveRadio.Checked Then
+                    If Pyramid1Radio.Checked Then
+                        dy = dy - 0.1
+                        SetColMat(Translate, 1, 0, 1, 0, dy)
+                    ElseIf Pyramid2Radio.Checked Then
+                        dy2 = dy2 - 0.1
+                        SetColMat(Translate2, 1, 0, 1, 0, dy2)
+                    Else
+                        MessageBox.Show("No pyramid is selected.",
+                                        "Warning",
+                                        MessageBoxButtons.OK,
+                                        MessageBoxIcon.Exclamation,
+                                        MessageBoxDefaultButton.Button1)
+                    End If
+                Else
+                    MessageBox.Show("No command is selected.",
+                                    "Warning",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Exclamation,
+                                    MessageBoxDefaultButton.Button1)
+                End If
+                DrawPyramids(True, True)
+                e.Handled = True
+            Case Keys.E
+                If MoveRadio.Checked Then
+                    If Pyramid1Radio.Checked Then
+                        If dz - 0.25 > -6.5 Then
+                            dz = dz - 0.125
+                            SetColMat(Translate, 2, 0, 0, 1, dz)
+                        End If
+                    ElseIf Pyramid2Radio.Checked Then
+                        If dz2 - 0.25 > -6.5 Then
+                            dz2 = dz2 - 0.125
+                            SetColMat(Translate2, 2, 0, 0, 1, dz2)
+                        End If
+                    Else
+                        MessageBox.Show("No pyramid is selected.",
+                                        "Warning",
+                                        MessageBoxButtons.OK,
+                                        MessageBoxIcon.Exclamation,
+                                        MessageBoxDefaultButton.Button1)
+                    End If
+                Else
+                    MessageBox.Show("No command is selected.",
+                                    "Warning",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Exclamation,
+                                    MessageBoxDefaultButton.Button1)
+                End If
+                DrawPyramids(True, True)
+                e.Handled = True
+            Case Keys.Z
+                If MoveRadio.Checked Then
+                    If Pyramid1Radio.Checked Then
+                        If dz + 0.25 < 2 Then
+                            dz = dz + 0.125
+                            SetColMat(Translate, 2, 0, 0, 1, dz)
+                        End If
+                    ElseIf Pyramid2Radio.Checked Then
+                        If dz2 + 0.25 < 2 Then
+                            dz2 = dz2 + 0.125
+                            SetColMat(Translate2, 2, 0, 0, 1, dz2)
+                        End If
+                    Else
+                        MessageBox.Show("No pyramid is selected.",
+                                        "Warning",
+                                        MessageBoxButtons.OK,
+                                        MessageBoxIcon.Exclamation,
+                                        MessageBoxDefaultButton.Button1)
+                    End If
+                Else
+                    MessageBox.Show("No command is selected.",
+                                    "Warning",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Exclamation,
+                                    MessageBoxDefaultButton.Button1)
+                End If
+                DrawPyramids(True, True)
+                e.Handled = True
+        End Select
     End Sub
 End Class
