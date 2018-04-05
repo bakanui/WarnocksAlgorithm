@@ -22,7 +22,11 @@
     Dim point7 As New Point(250, 250)
     Dim curvePoints As Point() = {point1, point4, point6}
 
+    Dim clipped As Point()
+    Dim p As Point()
+    Dim rect As Point()
     Dim blueBrush As New SolidBrush(Color.Blue)
+    Dim tempPoly As Point()
 
     Dim easy As Boolean
 
@@ -30,9 +34,46 @@
 
     End Structure
 
+    Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        bitmap = New Bitmap(Canvas1.Width, Canvas1.Height)
+        graphics = Graphics.FromImage(bitmap)
+        Canvas1.Image = bitmap
+        'InitWindow(Canvas1.Width, Canvas1.Height)
 
-    Private Sub ButtonClip_Click(sender As Object, e As EventArgs) Handles ButtonClip.Click
+        'graphics.FillPolygon(blueBrush, curvePoints)
+    End Sub
 
+    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+        graphics.FillPolygon(blueBrush, curvePoints)
+    End Sub
+
+    Private Sub Warnock(w As Rectangle)
+        RectToPoints(w)
+        PolygonClipping(curvePoints, w, clipped)
+        If clipped Is rect Then
+            tempPoly = curvePoints
+            nS = nS + 1
+        ElseIf clipped Is p Then
+            nIC = nIC + 1
+        ElseIf clipped Is rect And clipped IsNot p Then
+            nIC = nIC + 1
+        End If
+        easy = False
+        If nS = 0 And nIC = 0 Then
+            graphics.FillRectangle(backBrush, w)
+            easy = True
+        ElseIf nS = 1 And nIC = 0 Then
+            graphics.FillPolygon(blueBrush, tempPoly)
+            easy = True
+        ElseIf nS >= 1 Then
+            easy = True
+        End If
+        If Not easy Then
+
+        End If
+    End Sub
+
+    Private Sub PolygonClipping(Poly As Point(), mRect As Rectangle, c As Point())
         mRect.X = x
         mRect.Y = y
 
@@ -57,46 +98,21 @@
         Canvas1.Image = bitmap2
     End Sub
 
-    Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        bitmap = New Bitmap(Canvas1.Width, Canvas1.Height)
-        graphics = Graphics.FromImage(bitmap)
-        Canvas1.Image = bitmap
-        InitWindow(Canvas1.Width, Canvas1.Height)
-
-        ' graphics.FillPolygon(blueBrush, curvePoints)
-    End Sub
-
-    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
-        graphics.FillPolygon(blueBrush, curvePoints)
-    End Sub
-
-    Private Sub Warnock(w As Rectangle)
-        'surround intersect contain disjoint ?
-        easy = False
-        If nS = 0 And nIC = 0 Then
-            graphics.FillRectangle(backBrush, w)
-            easy = True
-        ElseIf nS = 1 And nIC = 0 Then
-            graphics.FillPolygon(blueBrush, curvePoints)
-            easy = True
-        ElseIf nS >= 1 Then
-            easy = True
-        End If
-        If Not easy Then
-
-        End If
-    End Sub
-
-    Private Sub PolygonClipping(Poly As Point())
-
-    End Sub
-
     Private Sub InitWindow(width As Integer, height As Integer)
         w(0) = New Rectangle(0, 0, width / 2, height / 2)
         w(1) = New Rectangle(width / 2, 0, width / 2, height / 2)
         w(2) = New Rectangle(0, height / 2, width / 2, height / 2)
         w(3) = New Rectangle(width / 2, height / 2, width / 2, height / 2)
     End Sub
+
+    Sub RectToPoints(ByVal r As Rectangle)
+        Dim p1 = New Point(r.Left, r.Top)
+        Dim p2 = New Point(r.Right, r.Top)
+        Dim p3 = New Point(r.Left, r.Bottom)
+        Dim p4 = New Point(r.Right, r.Bottom)
+        rect = {p1, p2, p3, p4}
+    End Sub
+
 
 
 End Class
