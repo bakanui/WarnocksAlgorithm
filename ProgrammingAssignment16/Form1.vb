@@ -11,7 +11,15 @@
     Dim dx2, dy2, dz2, tetax2, tetay2, tetaz2 As Single
     Dim firstrun As Boolean
     Dim VS1(4), VS2(4) As Vertex
-    'TODO SET and AEL Structure and BackCullingPolygons array/listof
+    Public Structure EdgeWindow
+        Public x1, y1, x2, y2 As Short
+        Public Sub New(v1 As Point, v2 As Point)
+            x1 = v1.X
+            y1 = v1.Y
+            x2 = v2.X
+            y2 = v2.Y
+        End Sub
+    End Structure
     Structure Vector
         Public i, j, k As Single
     End Structure
@@ -20,6 +28,15 @@
     End Structure
     Structure Vertex
         Dim x, y, z, w As Single
+        Public Sub New(_x As Single, _y As Single, _z As Single)
+            x = _x
+            y = _y
+            z = _z
+            w = 1
+        End Sub
+        Public Function ToShort() As Vertex
+            Return New Vertex(Convert.ToInt16(x), Convert.ToInt16(y), Convert.ToInt16(z))
+        End Function
     End Structure
     Structure Mesh
         Dim vertex1, vertex2, vertex3 As Integer
@@ -528,4 +545,50 @@
                 e.Handled = True
         End Select
     End Sub
+    Private Function ClipIntersect(eW As EdgeWindow, N As Point, sV As Vertex, eV As Vertex) As Vertex
+        Dim t As Single = ((sV.x - eW.x1) * N.X + (sV.y - eW.y1) * N.Y) / ((sV.x - eV.x) * N.X + (sV.y - eV.y) * N.Y)
+        Return New Vertex((sV.x + t * (eV.x - sV.x)), (sV.y + t * (eV.y - sV.y)), (sV.z + t * (eV.z - sV.z)))
+    End Function
+    Private Function SutherlandHodgmanClip(window As List(Of EdgeWindow), v1 As Vertex, v2 As Vertex, v3 As Vertex) As List(Of Vertex)
+        Dim polygonOutput As New List(Of Vertex) From {v1, v2, v3}
+        For Each e In window
+            Dim polygonInput As New List(Of Vertex)
+            polygonInput.AddRange(polygonOutput)
+            polygonOutput.Clear()
+
+            Dim startV As Vertex = polygonInput.Last
+            For Each endV In polygonInput
+                Dim startSide, endSide As Single
+                Dim m As Double = Math.Sqrt((e.x2 - e.x1) ^ 2 + (e.y2 - e.y1) ^ 2)
+                Dim N As Point
+
+                If m = 0 Then
+                    N = New Point(0, 0)
+                Else
+                    N = New Point((e.x2 - e.x1) / m, (e.y2 - e.y1) / m)
+                End If
+
+                startSide = ((startV.x - e.x1) * N.X + (startV.y - e.y1) * N.Y)
+                endSide = ((endV.x - e.x1) * N.X + (endV.y - e.y1) * N.Y)
+
+                '>0 Inside | <=0 Outside
+                If startSide > 0 And endSide > 0 Then
+                    polygonOutput.Add(endV.ToShort)
+                ElseIf startSide > 0 And endSide <= 0 Then
+                    polygonOutput.Add(ClipIntersect(e, N, startV, endV).ToShort)
+                ElseIf startSide <= 0 And endSide > 0 Then
+                    polygonOutput.Add(ClipIntersect(e, N, startV, endV).ToShort)
+                    polygonOutput.Add(endV.ToShort)
+                ElseIf startSide <= 0 And endSide <= 0 Then
+                    'Do Nothing
+                End If
+                startV = endV
+            Next
+
+            If polygonOutput.Count = 0 Then
+                Return polygonOutput
+            End If
+        Next
+        Return polygonOutput
+    End Function
 End Class
