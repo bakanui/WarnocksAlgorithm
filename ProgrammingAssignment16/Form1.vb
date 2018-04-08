@@ -11,6 +11,43 @@
     Dim dx2, dy2, dz2, tetax2, tetay2, tetaz2 As Single
     Dim firstrun As Boolean
     Dim VS1(4), VS2(4) As Vertex
+    Public Structure PolygonVertexIndex
+        Public v1, v2, v3 As Byte
+        Public color As Brush
+        Public Sub New(_v1 As Byte, _v2 As Byte, _v3 As Byte, _color As Brush)
+            v1 = _v1
+            v2 = _v2
+            v3 = _v3
+            color = _color
+        End Sub
+    End Structure
+    Public Structure PolygonVertex
+        Public vertex As List(Of Vertex)
+        Public color As Brush
+        Public Sub New(_vertex As List(Of Vertex), _color As Brush)
+            vertex = New List(Of Vertex)
+            vertex.AddRange(_vertex)
+            color = _color
+        End Sub
+        Public Function Find_Minimum() As Integer
+            Dim zMin = vertex.Last.z
+            For Each v In vertex
+                If zMin > v.z Then
+                    zMin = v.z
+                End If
+            Next
+            Return zMin
+        End Function
+        Public Function Find_Maximum() As Integer
+            Dim zMax = vertex.Last.z
+            For Each v In vertex
+                If zMax < v.z Then
+                    zMax = v.z
+                End If
+            Next
+            Return zMax
+        End Function
+    End Structure
     Public Structure EdgeWindow
         Public x1, y1, x2, y2 As Short
         Public Sub New(v1 As Point, v2 As Point)
@@ -591,4 +628,127 @@
         Next
         Return polygonOutput
     End Function
+    Private Function Warnock_IsEqual(window As List(Of EdgeWindow), polygon As List(Of Vertex)) As Boolean
+        If polygon.Count = 0 Or polygon.Count > 4 Then
+            Return False
+        End If
+
+        Dim i As Byte = 1
+        Dim x1, y1, x2, y2 As Integer
+        For Each e In window
+            x1 = polygon.Item(i).x
+            y1 = polygon.Item(i).y
+
+            If (polygon.Count = 4 And i = 3) Or (polygon.Count = 3 And i = 2) Then
+                i = 0
+            Else
+                i = i + 1
+            End If
+
+            x2 = polygon.Item(i).x
+            y2 = polygon.Item(i).y
+
+            If e.x1 <> x1 OrElse e.y1 <> y1 OrElse e.x2 <> x2 OrElse e.y2 <> y2 Then
+                Return False
+            End If
+        Next
+        Return True
+    End Function
+    Private Sub Warnock_Fill(window As List(Of EdgeWindow), color As Brush)
+        Dim points(3) As Point
+        For i = 0 To 3
+            points(i) = New Point(window.Item(i).x1, window.Item(i).y1)
+        Next
+        graphics.FillPolygon(color, points)
+    End Sub
+    Private Sub Warnock_Fill(polygon As List(Of Vertex), color As Brush)
+        Dim i As Byte = polygon.Count
+        Dim points(i - 1) As Point
+        For i = 0 To i - 1
+            points(i) = New Point(polygon.Item(i).x, polygon.Item(i).y)
+        Next
+        graphics.FillPolygon(color, points)
+    End Sub
+    Public Sub Warnock(windowBLx As Short, windowBLy As Short, windowTRx As Short, windowTRy As Short, lvl As Byte)
+        'Initialize
+        Dim window As New List(Of EdgeWindow) From {
+                New EdgeWindow(New Point(windowBLx, windowBLy), New Point(windowBLx, windowTRy)),
+                New EdgeWindow(New Point(windowBLx, windowTRy), New Point(windowTRx, windowTRy)),
+                New EdgeWindow(New Point(windowTRx, windowTRy), New Point(windowTRx, windowBLy)),
+                New EdgeWindow(New Point(windowTRx, windowBLy), New Point(windowBLx, windowBLy))
+            }
+        Dim polygonClip, polygonWarnock As New List(Of PolygonVertex)
+        Dim nSur, nIntr As Byte
+        Dim Easy As Boolean
+        Easy = False
+        nSur = 0
+        nIntr = 0
+
+        'Clipping the Polygon with Sutherland Hodgman
+
+
+        'Identify the polygon is surround or intersect the window
+        For Each c In polygonClip
+            If Warnock_IsEqual(window, c.vertex) Then
+                nSur = nSur + 1
+                polygonWarnock.Add(c)
+            ElseIf c.vertex.Count <> 0 Then
+                nIntr = nIntr + 1
+                polygonWarnock.Add(c)
+            End If
+        Next
+
+        'Identify the condition whether 'easy' or 'hard', fill the 'easy' polygon/window
+        If nSur = 0 And nIntr = 0 Then
+            Warnock_Fill(window, Brushes.White)
+            Easy = True
+        ElseIf nSur = 1 And nIntr = 0 Then
+            Warnock_Fill(window, polygonWarnock.Last.color)
+            Easy = True
+        ElseIf nSur = 0 And nIntr = 1 Then
+            Warnock_Fill(window, Brushes.White)
+            Warnock_Fill(polygonWarnock.Last.vertex, polygonWarnock.Last.color)
+            Easy = True
+        ElseIf nSur >= 1 Then
+            Dim polygonFront As PolygonVertex = polygonWarnock.Last
+            Dim zMin As Short = polygonFront.Find_Minimum
+            Dim zMax As Short = polygonFront.Find_Maximum
+            For Each p In polygonWarnock
+                Dim _zMin As Short = p.Find_Minimum
+                Dim _zMax As Short = p.Find_Maximum
+                'Prevent cross edge
+                If zMin >= _zMax Or _zMin >= zMax Then
+                    If _zMin >= zMax Then
+                        polygonFront = p
+                        zMin = _zMin
+                        zMax = _zMax
+                    End If
+                    Easy = True
+                Else
+                    Easy = False
+                    Exit For
+                End If
+            Next
+
+            If Easy = True AndAlso Warnock_IsEqual(window, polygonFront.vertex) Then
+                Warnock_Fill(window, polygonFront.color)
+            Else
+                Easy = False
+            End If
+        End If
+
+        'Conditon is hard, split into 4 more deep windows
+        If Easy = False Then
+            Warnock(windowBLx, windowBLy, windowBLx + (2 ^ (lvl - 1)), windowBLy + (2 ^ (lvl - 1)), lvl - 1)
+            Warnock(windowBLx + (2 ^ (lvl - 1)), windowBLy, windowTRx, windowBLy + (2 ^ (lvl - 1)), lvl - 1)
+            Warnock(windowBLx, windowBLy + (2 ^ (lvl - 1)), windowBLx + (2 ^ (lvl - 1)), windowTRy, lvl - 1)
+            Warnock(windowBLx + (2 ^ (lvl - 1)), windowBLy + (2 ^ (lvl - 1)), windowTRx, windowTRy, lvl - 1)
+        End If
+
+        'Draw window if needed
+        For Each e In window
+            graphics.DrawLine(Pens.Black, e.x1, e.y1, e.x2, e.y2)
+        Next
+    End Sub
+
 End Class
