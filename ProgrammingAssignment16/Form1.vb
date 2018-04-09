@@ -295,22 +295,26 @@
     Sub WarnockAlgorithm(pbc() As Mesh)
         'TODO warnock's algorithm here
     End Sub
-    Sub PolygonClipping() 'accepts poly, rect, c (?)
-        'TODO clipping here
+    Sub PolygonClipping(mesh() As Mesh) 'accepts poly, rect, c (?)
+
     End Sub
     'handles the drawing of the two pyramids
     Sub DrawPyramids()
         graphics.Clear(PictureBox1.BackColor)
-        DrawPyramid1(Color.Black)
-        DrawPyramid2(Color.Blue)
+        CalculatePyramid1()
+        CalculatePyramid2()
         BackFaceCulling(mesh1, mesh2, VS1, VS2)
+        Warnock(0, 0, 2 ^ 8, 2 ^ 8, 9)
+        Warnock(2 ^ 8, 0, 2 ^ 9, 2 ^ 8, 9)
+        Warnock(0, 2 ^ 8, 2 ^ 8, 2 ^ 9, 9)
+        Warnock(2 ^ 8, 2 ^ 8, 2 ^ 9, 2 ^ 9, 9)
+        DrawLinesPyramid1(Color.Black)
+        DrawLinesPyramid2(Color.Black)
         PictureBox1.Refresh()
     End Sub
     'calculates pyramid 1
-    Sub DrawPyramid1(color As Color)
+    Sub CalculatePyramid1()
         Dim VR1(4) As Vertex
-        Dim pen = New Pen(color)
-        Dim a, b, c, d, e, f, g, h, j, k, l, m As Integer
 
         SetTranslateRotateMatrix(dx, dy, dz, tetax, tetay, tetaz)
 
@@ -322,7 +326,24 @@
             VS1(i) = MultiplyMat1(VR1(i), view)
             VS1(i) = MultiplyMat1(VS1(i), screen)
         Next
+    End Sub
+    'calculates pyramid 2
+    Sub CalculatePyramid2()
+        Dim VR2(4) As Vertex
+        SetTranslateRotateMatrix(dx2, dy2, dz2, tetax2, tetay2, tetaz2)
 
+        For i = 0 To 4
+            pr = MultiplyMat2(Rotatez, Rotatey)
+            pr = MultiplyMat2(pr, Rotatex)
+            pr = MultiplyMat2(pr, Translate)
+            VR2(i) = MultiplyMat1(vertex2(i), pr)
+            VS2(i) = MultiplyMat1(VR2(i), view)
+            VS2(i) = MultiplyMat1(VS2(i), screen)
+        Next
+    End Sub
+    Sub DrawLinesPyramid1(color As Color)
+        Dim pen = New Pen(Color.Black)
+        Dim a, b, c, d, e, f, g, h, j, k, l, m As Integer
         For i = 0 To 3
             a = VS1(mesh1(i).vertex1).x
             b = VS1(mesh1(i).vertex1).y
@@ -341,22 +362,9 @@
             graphics.DrawLine(pen, j, k, l, m)
         Next
     End Sub
-    'calculates pyramid 2
-    Sub DrawPyramid2(color As Color)
+    Sub DrawLinesPyramid2(color As Color)
         Dim pen = New Pen(color)
-        Dim VR2(4) As Vertex
         Dim a, b, c, d, e, f, g, h, j, k, l, m As Integer
-        SetTranslateRotateMatrix(dx2, dy2, dz2, tetax2, tetay2, tetaz2)
-
-        For i = 0 To 4
-            pr = MultiplyMat2(Rotatez, Rotatey)
-            pr = MultiplyMat2(pr, Rotatex)
-            pr = MultiplyMat2(pr, Translate)
-            VR2(i) = MultiplyMat1(vertex2(i), pr)
-            VS2(i) = MultiplyMat1(VR2(i), view)
-            VS2(i) = MultiplyMat1(VS2(i), screen)
-        Next
-
         For i = 0 To 4
             a = VS2(mesh2(i).vertex1).x
             b = VS2(mesh2(i).vertex1).y
@@ -376,7 +384,7 @@
         Next
     End Sub
     'initializes view and screen matrix, canvas, graphics, and variables used for translating and rotating
-    Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+    Private Sub Form1_Load(sender As Object, eA As EventArgs) Handles MyBase.Load
         Me.KeyPreview = True
         firstrun = True
         tetaz = 0
@@ -684,8 +692,19 @@
         nSur = 0
         nIntr = 0
 
-        'Clipping the Polygon with Sutherland Hodgman
+        For Each m In mesh1
+            Dim v1 As New Vertex(VS1(m.vertex1).x, VS1(m.vertex1).y, VS1(m.vertex1).z)
+            Dim v2 As New Vertex(VS1(m.vertex2).x, VS1(m.vertex2).y, VS1(m.vertex2).z)
+            Dim v3 As New Vertex(VS1(m.vertex3).x, VS1(m.vertex3).y, VS1(m.vertex3).z)
+            polygonClip.Add(New PolygonVertex(SutherlandHodgmanClip(window, v1.ToShort, v2.ToShort, v3.ToShort), Brushes.Yellow))
+        Next
 
+        For Each m In mesh2
+            Dim v1 As New Vertex(VS2(m.vertex1).x, VS2(m.vertex1).y, VS2(m.vertex1).z)
+            Dim v2 As New Vertex(VS2(m.vertex2).x, VS2(m.vertex2).y, VS1(m.vertex2).z)
+            Dim v3 As New Vertex(VS2(m.vertex3).x, VS2(m.vertex3).y, VS2(m.vertex3).z)
+            polygonClip.Add(New PolygonVertex(SutherlandHodgmanClip(window, v1.ToShort, v2.ToShort, v3.ToShort), Brushes.Azure))
+        Next
 
         'Identify the polygon is surround or intersect the window
         For Each c In polygonClip
@@ -737,6 +756,33 @@
             End If
         End If
 
+        'Condition if the warnock is too deep
+        If Easy = False AndAlso lvl = 0 AndAlso polygonWarnock.Count <> 0 Then
+            Dim polygonFront As PolygonVertex = polygonWarnock.Last
+            Dim zMin As Short = polygonFront.Find_Minimum
+            Dim zMax As Short = polygonFront.Find_Maximum
+            For Each cp In polygonWarnock
+                Dim _zMin As Short = cp.Find_Minimum
+                Dim _zMax As Short = cp.Find_Maximum
+                If zMin >= _zMax Or _zMin >= zMax Then
+                    If _zMin >= zMax Then
+                        polygonFront = cp
+                        zMin = _zMin
+                        zMax = _zMax
+                    End If
+                    Easy = True
+                Else
+                    Easy = False
+                End If
+            Next
+            If Easy = True Then
+                Warnock_Fill(window, polygonFront.color)
+            Else
+                Warnock_Fill(window, polygonWarnock.Last.color)
+            End If
+            Easy = True
+        End If
+
         'Conditon is hard, split into 4 more deep windows
         If Easy = False Then
             Warnock(windowBLx, windowBLy, windowBLx + (2 ^ (lvl - 1)), windowBLy + (2 ^ (lvl - 1)), lvl - 1)
@@ -745,10 +791,6 @@
             Warnock(windowBLx + (2 ^ (lvl - 1)), windowBLy + (2 ^ (lvl - 1)), windowTRx, windowTRy, lvl - 1)
         End If
 
-        'Draw window if needed
-        For Each e In window
-            graphics.DrawLine(Pens.Black, e.x1, e.y1, e.x2, e.y2)
-        Next
-    End Sub
 
+    End Sub
 End Class
